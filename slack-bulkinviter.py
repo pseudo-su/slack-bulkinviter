@@ -35,19 +35,27 @@ channel_id = channels[0]['id']
 
 # Get users list
 response = slack.users.list()
-users = [(u['id'], u['name']) for u in response.body['members']]
+users = [(u['id'], u['name'], u['is_bot'], u['deleted']) for u in response.body['members']]
+num = 0
 
 # Invite all users to slack channel
-for user_id, user_name in users:
-    print("Inviting {} to {}".format(user_name, channel_name))
-    try:
-        slack.channels.invite(channel_id, user_id)
-    except Error as e:
-        code = e.args[0]
-        if code == "already_in_channel":
-            print("{} is already in the channel".format(user_name))
-        elif code in ('cant_invite_self', 'cant_invite', 'user_is_ultra_restricted'):
-            print("Skipping user {} ('{}')".format(user_name, code))
-        else:
-            raise
+for user_id, user_name, is_bot, is_deleted in users:
+    if user_name == 'admin': continue
+    if user_name == 'slackbot': continue
+    if is_deleted: continue
+    if is_bot: continue
+
+    num += 1
+    print("{}. Inviting {} to {}".format(num, user_name, channel_name))
+
+    # try:
+    #     slack.channels.invite(channel_id, user_id)
+    # except Error as e:
+    #     code = e.args[0]
+    #     if code == "already_in_channel":
+    #         print("{} is already in the channel".format(user_name))
+    #     elif code in ('cant_invite_self', 'cant_invite', 'user_is_ultra_restricted'):
+    #         print("Skipping user {} ('{}')".format(user_name, code))
+    #     else:
+    #         raise
 
